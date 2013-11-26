@@ -64,7 +64,7 @@ class TweetCollector():
                     self.results['Follower Count'] = tweet.user.followers_count
                     self.results['Verified'] = tweet.user.verified
                     self.results['Mentions'] = tweet.entities'''
-                    self.results[tweet.user.id] = {('Text', tweet.text),('Created',str(tweet.created_at)),('Place',str(tweet.place),('Geo',tweet.geo),('Coord',tweet.coordintates)('Follower Count', tweet.user.followers_count),('Verified',tweet.user.verified),('Entities', tweet.entities)}
+                    self.results[tweet.user.screen_name] = {('Text', tweet.text),('Created',str(tweet.created_at)),('Place',str(tweet.place),('Geo',tweet.geo),('Coord',tweet.coordintates)('Follower Count', tweet.user.followers_count),('Verified',tweet.user.verified),('Entities', tweet.entities)}
                     '''json.dump(self.results,outfile)
                     outfile.write('\n')'''
     
@@ -82,10 +82,13 @@ class TweetCollector():
                 
             for k in self.results.keys():
                 for mentionedPerson in self.results[k]['Entities']['user_mentions']:
-            api.get_user(k) = mentionedUser
-            if ((api.get_user(mentionedUser).followers_count > 20000) or (mentionedUser.verified = true)):
-                #add user to celebs
-                
+					mentionedUser = api.get_user(mentionedPerson)
+					if (mentionedUser['followers_count'] > 20000) or (mentionedUser['verified'] equals True)):
+						self.stars[mentionedPerson] = {('Follower Count', mentionedUser['followers_count']),('Verification',mentionedUser['verified']),('Geo Tag', self.results[k]['Geo'])} 
+					if(mentionedPerson equals self.results[k]):
+						self.stars[mentionedPerson]= ('Direct Celeb', True)
+					else:
+						self.stars[mentionedPerson]= ('Direct Celeb', False)
             
     
 
