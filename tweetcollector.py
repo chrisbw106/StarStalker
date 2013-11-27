@@ -52,67 +52,78 @@ class TweetCollector():
         # go through queries about celeb and find 50 tweets
         for query in self.queries:
             with open('justMetHtown', 'a+') as outfile:
-                for tweet in tweepy.Cursor(api.search,q= query,geocode = "29.752554,-95.37040089999999,20mi", lang = "en").items(250):
-                    
-                    '''self.results['User ID'] = tweet.user.id
-                    self.results['Screen Name'] = tweet.user.screen_name
-                    self.results['Text']= tweet.text
-                    self.results['Created']= str(tweet.created_at)
-                    self.results['Place']= str(tweet.place)
-                    self.results['Geo'] = tweet.geo
-                    self.results['Coord'] = tweet.coordinates
-                    self.results['Follower Count'] = tweet.user.followers_count
-                    self.results['Verified'] = tweet.user.verified
-                    self.results['Mentions'] = tweet.entities'''
-                    self.results[tweet.user.screen_name] = {('Text', tweet.text),('Created',str(tweet.created_at)),('Place',str(tweet.place),('Geo',tweet.geo),('Coord',tweet.coordintates)('Follower Count', tweet.user.followers_count),('Verified',tweet.user.verified),('Entities', tweet.entities)}
-                    '''json.dump(self.results,outfile)
-                    outfile.write('\n')'''
+                for tweet in tweepy.Cursor(api.search,q= query,geocode = "29.752554,-95.37040089999999,20mi", lang = "en").items(100):
+                    self.results[tweet.user.screen_name] = {}
+                    self.results[tweet.user.screen_name]['Text']= tweet.text
+                    self.results[tweet.user.screen_name]['Created'] = str(tweet.created_at)
+                    self.results[tweet.user.screen_name]['Place']=str(tweet.place)
+                    self.results[tweet.user.screen_name]['Geo'] = tweet.geo
+                    self.results[tweet.user.screen_name]['Coord']=tweet.coordinates
+                    self.results[tweet.user.screen_name]['Follower Count']= tweet.user.followers_count
+                    self.results[tweet.user.screen_name]['Verified'] = tweet.user.verified
+                    self.results[tweet.user.screen_name]['Entities']= tweet.entities
+                    json.dump(self.results,outfile)
+                    outfile.write('\n')
     
-    
-    def parsingResults(self):
-        # going through mentioned users to determine if talking about celeb
-        
-        '''for clump in self.results
-            if(('Follower Count') > 20000):
-            if('Verified' = 'true'):
-            
-            if('Geo' != 'null'):
-            if('Place' != 'None'):
-            if('Coord' != 'null'):'''
-                
-            for k in self.results.keys():
-                for mentionedPerson in self.results[k]['Entities']['user_mentions']:
-					mentionedUser = api.get_user(mentionedPerson)
-					if (mentionedUser['followers_count'] > 20000) or (mentionedUser['verified'] equals True)):
-						self.stars[mentionedPerson] = {('Follower Count', mentionedUser['followers_count']),('Verification',mentionedUser['verified']),('Geo Tag', self.results[k]['Geo'])} 
-					if(mentionedPerson equals self.results[k]):
-						self.stars[mentionedPerson]= ('Direct Celeb', True)
-					else:
-						self.stars[mentionedPerson]= ('Direct Celeb', False)
-            
-    
+    def parsingTweeters(self):
+    	api = tweepy.API(self.auth)
+    	for tweeter in self.results.keys():
+    		with open('TweetStars', 'a+') as outfile:
+    			user= api.get_user(tweeter)
+    			
+    			if (user.followers_count > 20000) or (user.verified == True):
+    				print user.screen_name 
+    				print user.followers_count 
+    				self.stars[tweeter] = {}
+    				self.stars[tweeter]['Follower Count']= user.followers_count
+    				self.stars[tweeter]['Verified']= user.verified
+    				self.stars[tweeter]['Geo']= self.results[tweeter]['Geo']
+    				self.stars[tweeter]['Direct Star'] = True
+    				json.dump(self.stars,outfile)
+    				outfile.write('\n')
+    			
+    	
+    def parsingMentions(self):
+        # going through mentioned users to determine if talking about celeb   
+        api = tweepy.API(self.auth)             
+        for k in self.results.keys():
+        	with open('Stars', 'a+') as outfile:
+	            for mentionedPerson in self.results[k]['Entities']['user_mentions']:
+	                mentionedUser = api.get_user(mentionedPerson['screen_name'])
+	               
+	                if (mentionedUser.followers_count > 20000) or (mentionedUser.verified == True):
+	                	print mentionedUser.screen_name
+	                	print k
+	                	self.stars[mentionedUser.screen_name] = {}
+	                	self.stars[mentionedUser.screen_name]['Follower Count']= mentionedUser.followers_count
+	                	self.stars[mentionedUser.screen_name]['Verified']= mentionedUser.verified
+	                	self.stars[mentionedUser.screen_name]['Geo']= self.results[k]['Geo']
+	                	self.stars[mentionedUser.screen_name]['Direct Star'] = False
+	                	json.dump(self.stars,outfile)
+	                	outfile.write('\n')
+	        
+
 
     '''
-    def collectCelebTweets(self):
-        
-        self.queries.append('from: jmanziel2')
-        self.results = {}
-        api = tweepy.API(self.auth)
-        
-        # go through queries about celeb and find 50 tweets
-        for query in self.queries:
-            for tweet in tweepy.Cursor(api.search,rpp = 100,q= query,result_type="mixed").items(200):
-                if query not in self.results.keys():
-                    self.results[query] = []
-                self.results[query].append(dict([(tweet.user.name, [tweet.geo,tweet.text])]))
-    
-        #create json file
-        with open('celebTweetsLG.json','wb') as file :
-            json.dump(self.results,file)
-    '''
+def collectCelebTweets(self):
+self.queries.append('from: jmanziel2')
+self.results = {}
+api = tweepy.API(self.auth)
+# go through queries about celeb and find 50 tweets
+for query in self.queries:
+for tweet in tweepy.Cursor(api.search,rpp = 100,q= query,result_type="mixed").items(200):
+if query not in self.results.keys():
+self.results[query] = []
+self.results[query].append(dict([(tweet.user.name, [tweet.geo,tweet.text])]))
+#create json file
+with open('celebTweetsLG.json','wb') as file :
+json.dump(self.results,file)
+'''
         
 if __name__ == "__main__":
     tc = TweetCollector()
     #tc.collectTweetsByLoc()
     tc.collectOthersTweets()
+    tc.parsingMentions()
+    #tc.parsingTweeters()
 #tc.collectCelebTweets()
