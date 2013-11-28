@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head profile="http://www.w3.org/2005/10/profile">
+<link rel="icon" 
+      type="image/png" 
+      href="http://i1200.photobucket.com/albums/bb323/coharkyaeon/favicon.png">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Star Stalker</title>
+
+<link href="style.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAJew0TdvMP0xMR5I87tRB1jXDZJWh20HA&sensor=false">
+
+    </script>
+
+</head>
+
+<body>
+
+<div id="bggrad">
+<table width="600" border="0" cellspacing="5" cellpadding="0" align="center">
+  <tr>
+    <td><div id="banner" align="center">
+      <p><img src="banner.png" width="440" height="227" alt="Star Stalker" /></p>
+    </div></td>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+    <br />
+    <form id="stalk" name="stalk" method="get" action="s.php" onsubmit="this.submit();return false;">
+      <input name="location" type="text" id="flocation" value="City, State" onChange="codeAddress()"/><br />
+      <br />
+      <input name="starname" type="text" id="fstarname" value="Star Name (optional)" /><br /><br />
+      <input name="lat" type="hidden" id="flat" value="null" />
+      <input name="lng" type="hidden" id="flng" value="null" />
+      <input type="image" id="submit" src="lbutton.png" height="107px" width="110px" /><br />
+      <br />
+      
+      
+    </form><br /></td>
+  </tr>
+</table>  
+
+</div>
+
+
+
+<script>
+
+		var x=document.getElementById("flocation");
+		var y=document.getElementById("flat");
+		var z=document.getElementById("flng");
+		var geocoder;
+		function getLocation()
+		{
+			geocoder = new google.maps.Geocoder();
+			
+			if (navigator.geolocation)
+			{
+				navigator.geolocation.getCurrentPosition(showPosition);
+			}
+			else
+			{
+				x.value="Couldn't get Location";
+			}
+		}
+		
+		function extractFromAdress(components, type){
+			for (var i=0; i<components.length; i++)
+				for (var j=0; j<components[i].types.length; j++)
+					if (components[i].types[j]==type) return components[i].long_name;
+			return "";
+		}
+		function extractFromAdressS(components, type){
+			for (var i=0; i<components.length; i++)
+				for (var j=0; j<components[i].types.length; j++)
+					if (components[i].types[j]==type) return components[i].short_name;
+			return "";
+		
+		}
+		function showPosition(position)
+		{
+			x.value=position.coords.latitude +","+ position.coords.longitude;
+			y.value=position.coords.latitude;
+			z.value=position.coords.longitude;
+			var input = x.value;
+		  var latlngStr = input.split(',', 2);
+		  var lat = parseFloat(latlngStr[0]);
+		  var lng = parseFloat(latlngStr[1]);
+		  var latlng = new google.maps.LatLng(lat, lng);
+		  geocoder.geocode({'latLng': latlng}, function(results, status) {
+			if (status == google.maps.GeocoderStatus.OK) {
+			  if (results[1]) {
+				x.value=extractFromAdress(results[0].address_components, "locality")+","+extractFromAdressS(results[0].address_components, "administrative_area_level_1");
+				
+			  } else {
+				alert('No results found');
+			  }
+			} else {
+			  alert('Geocoder failed due to: ' + status);
+			}
+		  });
+
+		}
+		function codeAddress() {
+			var address = x.value;
+			geocoder.geocode( { 'address': address}, function(results2, status) {
+			if (status == google.maps.GeocoderStatus.OK) {
+				  var input2 = results2[0].geometry.location;
+				  var latlngStr = String(input2).split(',', 2);
+				  var lat = parseFloat(latlngStr[0].substring(1));
+				  var lng = parseFloat(latlngStr[1]);
+				  y.value=lat;
+				  z.value=lng;
+			} else {
+			  alert('Geocode was not successful for the following reason: ' + status);
+			}
+			});
+		}
+		    
+		window.onload = getLocation();
+    </script>
+  
+
+</body>
+</html>

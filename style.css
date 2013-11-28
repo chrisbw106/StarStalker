@@ -1,0 +1,44 @@
+@charset "utf-8";
+/* CSS Document */
+
+body,td,th {
+	color: #CCC;
+}
+body {
+background:#333;
+ height: 100%; margin: 0; padding: 0
+
+
+}
+input[type="text"] {
+	text-align:center; 
+	width: 225px;
+	height:25px;
+	color: #CCC;
+	border: solid 1px #666666;  
+    outline: 0;  
+	background-color:#797979;
+	box-shadow: rgba(0,0,0, 0.5) 0px 0px 8px;  
+    -moz-box-shadow: rgba(0,0,0, 0.5) 0px 0px 8px;  
+    -webkit-box-shadow: rgba(0,0,0, 0.5) 0px 0px 8px;
+}
+input:hover,input:focus {
+	border-color:#F90;
+} 
+
+#bggrad {
+
+	background-image:url(bg.png);
+	background-repeat:repeat-x;
+	width:100%;
+}
+#searchbar {
+
+	background-image:url(sbbg.png);
+	background-repeat:repeat-x;
+}
+
+
+
+	
+	
