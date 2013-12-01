@@ -12,28 +12,28 @@ class TestRanker():
         self.stars["David"]['Follower Count']= 35000
         self.stars["David"]['Mention Count'] = 2
         self.stars["David"]['Verified']= True
-        self.stars["David"]['Geo']= "30.627977,-96.334407"
+        self.stars["David"]['Geo']= ["30.627977,-96.334407"]
         self.stars["David"]['Direct Star'] = True
         
         self.stars["Christine"] = {}
         self.stars["Christine"]['Follower Count']= 100000
         self.stars["Christine"]['Mention Count'] = 12
         self.stars["Christine"]['Verified']= False
-        self.stars["Christine"]['Geo']= 'null'
+        self.stars["Christine"]['Geo']= ['null']
         self.stars["Christine"]['Direct Star'] = False
         
         self.stars["Keleigh"] = {}
         self.stars["Keleigh"]['Follower Count']= 21583
         self.stars["Keleigh"]['Mention Count'] = 6
         self.stars["Keleigh"]['Verified']= False
-        self.stars["Keleigh"]['Geo']= "30.627977,-96.334407"
+        self.stars["Keleigh"]['Geo']= ["30.627977,-96.334407"]
         self.stars["Keleigh"]['Direct Star'] = False
         
         self.stars["James"] = {}
         self.stars["James"]['Follower Count']= 1000470
         self.stars["James"]['Mention Count'] = 60
         self.stars["James"]['Verified']= True
-        self.stars["James"]['Geo']= 'null'
+        self.stars["James"]['Geo']= ['null']
         self.stars["James"]['Direct Star'] = True
         
         

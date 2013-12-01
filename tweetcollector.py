@@ -81,15 +81,15 @@ class TweetCollector():
     def parsingTweeters(self):
         # determining if tweeter is a celeb
         
-            api = tweepy.API(self.auth)
-            for tId in self.results:
-                    with open('TweetStars', 'a+') as outfile:
-                            user = self.results[tId]
+    	api = tweepy.API(self.auth)
+    	for tId in self.results:
+    		with open('TweetStars', 'a+') as outfile:
+    			user = self.results[tId]
                 if (user['Follower Count']> 20000) or (user['Verified']== True):
                     if(user.screen_name not in self.stars.keys()):
                         # checking for repeats
                         # print user.screen_name
-                        # print user.followers_count
+                        # print user.followers_count 
                         self.stars[user['Screen Name']] = {}
                         self.stars[user['Screen Name']]['Follower Count']= user.followers_count
                         self.stars[user['Screen Name']]['Verified']= user.verified
@@ -102,16 +102,16 @@ class TweetCollector():
                         
                     json.dump(self.stars[user['Screen Name']],outfile)
                     outfile.write('\n')
-                            
-            
+    			
+    	
     def parsingMentions(self):
         # going through mentioned users to determine if talking about celeb
         
         api = tweepy.API(self.auth)
         
         for tId in self.results.keys():
-                with open('Stars', 'a+') as outfile:
-         for mentionedPerson in self.results[tId]['Entities']['user_mentions']:
+        	with open('Stars', 'a+') as outfile:
+	            for mentionedPerson in self.results[tId]['Entities']['user_mentions']:
                         mentionedUser = api.get_user(mentionedPerson['screen_name'])
                         if(mentionedUser.followers_count > 20000) or (mentionedUser.verified == True):
                             if(mentionedUser.screen_name not in self.stars.keys()):
@@ -164,7 +164,7 @@ class TweetCollector():
         #print self.stars
         ranked = []
         
-        #Vector =[Verification, #Mentions, GeoTaged, FromCeleb]
+        #Vector =[Verification, #Mentions, GeoTaged, FromCeleb]    
         ideal = [1,5,1,1]
         
         #Rank Each Star based on features and ideal similarity
