@@ -1,0 +1,33 @@
+def geoCounter(self):
+	# populate geoDict with locations and the number of mentions of that locationo
+		locList = [set(self.stars[self.starname]['Geo'])] # locations minus duplicates
+		geoDict = {}
+		for loc in locList:
+			for geo in self.stars[self.starname]['Geo']:#locations plus duplicates
+				if loc == geo:
+					if loc not in self.geoDict.keys():
+						geoDict[loc] = {}
+						geoDict[loc]['Follower Count'] = self.stars[self.starname]['Follower Count']
+						geoDict[loc]['Verified']= self.stars[self.starname]['Verified']
+						geoDict[loc] = loc
+						geoDict[loc]['Direct Star'] = True
+						geoDict[loc]['Location Count'] = 1
+					else:
+						geoDict[loc]['Location Count'] = self.geoDict[loc]['Location Count'] + 1
+                    		
+		self.stars = geoDict	
+	
+    def getStarname(self):
+        return self.starname
+                        
+if __name__ == "__main__":
+    tc = TweetCollector()
+    tc.readInput()
+    tc.collectOthersTweets()
+    tc.parsingTweeters()
+    tc.parsingMentions()
+    print tc.stars
+    if(tc.getStarname != ''):
+	    tc.geoCounter()
+    tc.rankStars()
+    
