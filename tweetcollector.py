@@ -13,16 +13,16 @@ class TweetCollector():
         
 
         #David's login
-        #self.consumer_key = "zfkFLLrMmDA8ojyqyrYcw"
-        #self.consumer_secret = "eTf1oL8uCTp04OVQLtudOh33CA8MVdoIvnoYJppAn0"
-        #self.access_token_key = "1972352642-Niy99g2jyZGMIHfDKcKttNjmty0LUCri4dKHdFR"
-        #self.access_token_secret = "tbe9vEBgXhIgVuCue5YcPr20W1VRAXJkPwgVRpET4"
+        self.consumer_key = "zfkFLLrMmDA8ojyqyrYcw"
+        self.consumer_secret = "eTf1oL8uCTp04OVQLtudOh33CA8MVdoIvnoYJppAn0"
+        self.access_token_key = "1972352642-Niy99g2jyZGMIHfDKcKttNjmty0LUCri4dKHdFR"
+        self.access_token_secret = "tbe9vEBgXhIgVuCue5YcPr20W1VRAXJkPwgVRpET4"
         
         #Christine's login
-        self.consumer_key = 'hWjShWB1zy3nFPiZAeiGDw'
-        self.consumer_secret = 'WVAiwKleMPcU6odK9GDgN78z2TO33besdXhWrmUEQ'
-        self.access_token_key = '496512154-WTtSOwcMnI98KC2gb5qI1P34tig1899EH03cPuBf'
-        self.access_token_secret = 'Ko8y1QhwPo3vScx6vslaLYPqAiuIjoLNXt5Tuyow'
+        #self.consumer_key = 'hWjShWB1zy3nFPiZAeiGDw'
+        #self.consumer_secret = 'WVAiwKleMPcU6odK9GDgN78z2TO33besdXhWrmUEQ'
+        #self.access_token_key = '496512154-WTtSOwcMnI98KC2gb5qI1P34tig1899EH03cPuBf'
+        #self.access_token_secret = 'Ko8y1QhwPo3vScx6vslaLYPqAiuIjoLNXt5Tuyow'
         
         self.auth = tweepy.auth.OAuthHandler(self.consumer_key, self.consumer_secret)
         self.auth.set_access_token(self.access_token_key, self.access_token_secret)
@@ -65,6 +65,7 @@ class TweetCollector():
                 for tweet in tweepy.Cursor(api.search,q= query,geocode = str(self.geolat)+"," + str(self.geolng)+ ",20mi", lang = "en").items(100):
                     self.results[tweet.id] = {}
                     self.results[tweet.id]['Screen Name'] = tweet.user.screen_name
+                    self.results[tweet.id]['Name'] = tweet.user.name
                     self.results[tweet.id]['Text']= tweet.text
                     self.results[tweet.id]['Created'] = str(tweet.created_at)
                     self.results[tweet.id]['Place'] = str(tweet.place)
@@ -87,14 +88,13 @@ class TweetCollector():
             if (user['Follower Count']> 20000) or (user['Verified'] == True):
                 if(user['Screen Name'] not in self.stars.keys()):
                     # checking for repeats
-                    # print user.screen_name
-                    # print user.followers_count 
                     self.stars[user['Screen Name']] = {}
                     self.stars[user['Screen Name']]['Follower Count'] = user['Follower Count']
                     self.stars[user['Screen Name']]['Verified']= user['Verified']
                     self.stars[user['Screen Name']]['Geo']= [user['Geo']]
                     self.stars[user['Screen Name']]['Direct Star'] = True
                     self.stars[user['Screen Name']]['Mention Count'] = 1
+                    self.stars[user['Screen Name']]['Name'] = user['Name']
                 else:
                     self.stars[user['Screen Name']]['Geo'].append(user['Geo'])
                     self.stars[user['Screen Name']]['Mention Count'] = self.stars[user['Screen Name']]['Mention Count'] + 1
@@ -111,8 +111,6 @@ class TweetCollector():
                         if(mentionedUser.followers_count > 20000) or (mentionedUser.verified == True):
                             if(mentionedUser.screen_name not in self.stars.keys()):
                                 # checking for repeats
-                                # print mentionedUser.screen_name
-                                # print k
                                 self.stars[mentionedUser.screen_name] = {}
                                 self.stars[mentionedUser.screen_name]['Screen Name'] = mentionedUser.screen_name
                                 self.stars[mentionedUser.screen_name]['Follower Count']= mentionedUser.followers_count
@@ -120,13 +118,48 @@ class TweetCollector():
                                 self.stars[mentionedUser.screen_name]['Geo']= [self.results[tId]['Geo']]
                                 self.stars[mentionedUser.screen_name]['Direct Star'] = False
                                 self.stars[mentionedUser.screen_name]['Mention Count'] = 1
+                                self.stars[mentionedUser.screen_name]['Name'] = mentionedUser.name
                             else:
                                 self.stars[mentionedUser.screen_name]['Geo'].append(self.results[tId]['Geo'])
                                 self.stars[mentionedUser.screen_name]['Mention Count'] = self.stars[mentionedUser.screen_name]['Mention Count'] + 1
                                 
                             json.dump(self.stars[mentionedUser.screen_name],outfile)
                             outfile.write('\n')
+
+        if(self.starname != 'null'):
+            tc.starCorrection()
                         
+    def starCorrection(self):
+        # fixes error when user searches for specific celeb
+        api = tweepy.API(self.auth)
+        starKeys = self.stars.keys()
+        for star in starKeys:
+            if(self.stars[star]['Name'] != self.starname):
+                self.stars.pop(star, None)
+    '''
+    def geoCounter(self):
+        # populate geoDict with locations and the number of mentions of that locationo
+        locList = [set(self.stars[self.starname]['Geo'])] # locations minus duplicates
+        geoDict = {}
+        for loc in locList:
+            for geo in self.stars[self.starname]['Geo']:#locations plus duplicates
+                if loc == geo:
+                    if loc not in self.geoDict.keys():
+                        geoDict[loc] = {}
+                        geoDict[loc]['Follower Count'] = self.stars[self.starname]['Follower Count']
+                        geoDict[loc]['Verified']= self.stars[self.starname]['Verified']
+                        geoDict[loc] = loc
+                        geoDict[loc]['Direct Star'] = True
+                        geoDict[loc]['Location Count'] = 1
+                    else:
+                        geoDict[loc]['Location Count'] = self.geoDict[loc]['Location Count'] + 1
+        
+        self.stars = geoDict
+
+    def getStarname(self):
+        return self.starname
+    '''
+                    
     def CosineSim(self, vec_query, vec_doc):
         #dot product
         dot = 0
@@ -139,7 +172,7 @@ class TweetCollector():
         qmag = math.sqrt(qmag)
         dmag = math.sqrt(dmag)
         return dot/(qmag*dmag)
-    
+
     def buildVector(self, star):
         vec = []
         
@@ -177,8 +210,6 @@ class TweetCollector():
         rsorted = [i for i in reversed(rsorted)]
         
         print rsorted
-
-
                         
 if __name__ == "__main__":
     tc = TweetCollector()
@@ -187,4 +218,6 @@ if __name__ == "__main__":
     tc.parsingTweeters()
     tc.parsingMentions()
     print tc.stars
+        #if(tc.getStarname != ''):
+    #tc.geoCounter()
     tc.rankStars()
