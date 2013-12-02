@@ -11,7 +11,6 @@ class TweetCollector():
         #self.access_token_key = '2187598915-rnBc8enRqFQeFwJIdBznDeMX3SFveRJhNJCrVCq'
         #self.access_token_secret = '6aHe6iKgBTOvSO9Nh4zU5zA1XsvzFkwra8qy3eHaU8eRz'
         
-
         #David's login
         self.consumer_key = "zfkFLLrMmDA8ojyqyrYcw"
         self.consumer_secret = "eTf1oL8uCTp04OVQLtudOh33CA8MVdoIvnoYJppAn0"
@@ -23,6 +22,12 @@ class TweetCollector():
         #self.consumer_secret = 'WVAiwKleMPcU6odK9GDgN78z2TO33besdXhWrmUEQ'
         #self.access_token_key = '496512154-WTtSOwcMnI98KC2gb5qI1P34tig1899EH03cPuBf'
         #self.access_token_secret = 'Ko8y1QhwPo3vScx6vslaLYPqAiuIjoLNXt5Tuyow'
+        
+        #Keleigh's login
+        #self.consumer_key = 'tHn9c6xyP8Kuyot1UsqhQw'
+        #self.consumer_secret = 'ilwnOuMm2wYZLbyyf7seNG3O943kj9vf5UMifAY8'
+        #self.access_token_key = '344466953-k5pS83JQCqmEezlF7dMcFVlAxUPEFY02Yb4ZtzTh'
+        #self.access_token_secret = 'rf6vGZgt8Neqt1u7lW7xbYyJItr9lx5lMSRpALFSKFU'
         
         self.auth = tweepy.auth.OAuthHandler(self.consumer_key, self.consumer_secret)
         self.auth.set_access_token(self.access_token_key, self.access_token_secret)
@@ -37,7 +42,7 @@ class TweetCollector():
         self.stars = {}
     
     def readInput(self):
-        lines = [line.strip() for line in open('input_dataHou.txt')]
+        lines = [line.strip() for line in open('input_dataCS.txt')]
         self.location = lines[0]
         self.starname = lines[1]
         self.geolat = lines[2]
@@ -55,17 +60,17 @@ class TweetCollector():
             self.queries.append('"just met" -RT')
             self.queries.append('"just saw" -RT')
             self.queries.append('"spotted" -RT')
-            self.queries.append('"sighted" -RT')
-        
+
         api = tweepy.API(self.auth)
         
         # go through queries about celeb and find tweets
         for query in self.queries:
-            with open('Results', 'a+') as outfile:
+            with open('ResultsCS', 'a+') as outfile:
                 for tweet in tweepy.Cursor(api.search,q= query,geocode = str(self.geolat)+"," + str(self.geolng)+ ",20mi", lang = "en").items(100):
                     self.results[tweet.id] = {}
                     self.results[tweet.id]['Screen Name'] = tweet.user.screen_name
                     self.results[tweet.id]['Name'] = tweet.user.name
+                    self.results[tweet.id]['tId'] = tweet.id
                     self.results[tweet.id]['Text']= tweet.text
                     self.results[tweet.id]['Created'] = str(tweet.created_at)
                     self.results[tweet.id]['Place'] = str(tweet.place)
@@ -84,20 +89,24 @@ class TweetCollector():
     	api = tweepy.API(self.auth)
         
         for tId in self.results:
-            user = self.results[tId]
-            if (user['Follower Count']> 20000) or (user['Verified'] == True):
-                if(user['Screen Name'] not in self.stars.keys()):
-                    # checking for repeats
-                    self.stars[user['Screen Name']] = {}
-                    self.stars[user['Screen Name']]['Follower Count'] = user['Follower Count']
-                    self.stars[user['Screen Name']]['Verified']= user['Verified']
-                    self.stars[user['Screen Name']]['Geo']= [user['Geo']]
-                    self.stars[user['Screen Name']]['Direct Star'] = True
-                    self.stars[user['Screen Name']]['Mention Count'] = 1
-                    self.stars[user['Screen Name']]['Name'] = user['Name']
-                else:
-                    self.stars[user['Screen Name']]['Geo'].append(user['Geo'])
-                    self.stars[user['Screen Name']]['Mention Count'] = self.stars[user['Screen Name']]['Mention Count'] + 1
+            with open('StarsCS', 'a+') as outfile:
+                user = self.results[tId]
+                if (user['Follower Count']> 20000) or (user['Verified'] == True):
+                    if(user['Screen Name'] not in self.stars.keys()):
+                        # checking for repeats
+                        self.stars[user['Screen Name']] = {}
+                        self.stars[user['Screen Name']]['Screen Name'] = user['Screen Name']
+                        self.stars[user['Screen Name']]['Follower Count'] = user['Follower Count']
+                        self.stars[user['Screen Name']]['Verified']= user['Verified']
+                        self.stars[user['Screen Name']]['Geo']= [user['Geo']]
+                        self.stars[user['Screen Name']]['Direct Star'] = True
+                        self.stars[user['Screen Name']]['Mention Count'] = 1
+                        self.stars[user['Screen Name']]['Name'] = user['Name']
+                    else:
+                        self.stars[user['Screen Name']]['Geo'].append(user['Geo'])
+                        self.stars[user['Screen Name']]['Mention Count'] = self.stars[user['Screen Name']]['Mention Count'] + 1
+                    json.dump(self.stars[user['Screen Name']],outfile)
+                    outfile.write('\n')
     			
     def parsingMentions(self):
         # going through mentioned users to determine if talking about celeb
@@ -105,7 +114,7 @@ class TweetCollector():
         api = tweepy.API(self.auth)
         
         for tId in self.results.keys():
-        	with open('Stars', 'a+') as outfile:
+        	with open('StarsCS', 'a+') as outfile:
 	            for mentionedPerson in self.results[tId]['Entities']['user_mentions']:
                         mentionedUser = api.get_user(mentionedPerson['screen_name'])
                         if(mentionedUser.followers_count > 20000) or (mentionedUser.verified == True):
@@ -179,11 +188,11 @@ class TweetCollector():
         vec.append(1 if self.stars[star]['Verified'] else 0)
         vec.append(1 if self.stars[star]['Mention Count'] else 0)
         for loc in self.stars[star]['Geo']:
-            if self.stars[star]['Geo']!='null':
-                vec.append(1)
-                break
+            if loc == None:
+                geoVal = 0
             else:
-                vec.append(0)
+                geoVal = 1
+        vec.append(geoVal)
         vec.append(1 if self.stars[star]['Direct Star'] else 0)
         
         return vec
@@ -198,26 +207,84 @@ class TweetCollector():
         #Rank Each Star based on features and ideal similarity
         for star in self.stars.keys():
             starvec = self.buildVector(star)
-            rank = self.CosineSim(starvec,ideal)
+            cos = self.CosineSim(starvec,ideal)
+            rank = 0
             rank = rank + .3*(math.log10(self.stars[star]['Follower Count'])/10)
-            rank = rank + .2*(starvec[0])
-            rank = rank + .3*(1+math.log10(starvec[1])/10)
-            rank = rank + .1*(starvec[2])
-            rank = rank + .1*(starvec[3])
-            ranked.append((star,rank))
+            rank = rank + .2*(starvec[0])   #verification
+            rank = rank + .15*(1+math.log10(starvec[1])/10)  #mention count
+            rank = rank + .3*(starvec[2])   #geo
+            geo = .3 * (starvec[2])
+            rank = rank + .05*(starvec[3])   #directStar
+            rank = rank + cos
+            ranked.append((star,rank,cos,geo))
         
         rsorted = sorted(ranked, key=lambda data: data[1])
         rsorted = [i for i in reversed(rsorted)]
         
-        print rsorted
-                        
+        for i in range(min(10,len(rsorted))):
+            print str(i+1) + " " + str(rsorted[i])
+        return rsorted
+    
+    def read_data(self,filename):
+        #Used to read all tweets from the json file
+        data = []
+        try:
+            with open(filename) as f:
+                for line in f:
+                    data.append(json.loads(line.strip()))
+        except:
+            print "Failed to read data!"
+            return []
+        print "The json file has been successfully read!"
+        
+        for tweet in data:
+            self.results[tweet['tId']]= tweet
+        print len(self.results.keys())
+
+    def read_stars(self,filename):
+        #Used to read all tweets from the json file
+        data = []
+        try:
+            with open(filename) as f:
+                for line in f:
+                    data.append(json.loads(line.strip()))
+        except:
+            print "Failed to read data!"
+            return []
+        print "The json file has been successfully read!"
+        
+        for star in data:
+            self.stars[star['Screen Name']]= star
+        print len(self.stars.keys())
+
+    def outputdata(self):
+        output = []
+        rank = self.rankStars()
+        for i in range(min(10,len(rank))):
+            user = rank[i][0]
+            for multgeo in self.stars[user]['Geo']:
+                if multgeo != None:
+                    output.append(([self.stars[user]['Screen Name']], multgeo['coordinates']))
+             
+        for out in output:
+            print out
+        with open('outputCS', 'a+') as outfile:
+            json.dump(output,outfile)
+            outfile.write('\n')
+
+            
+
 if __name__ == "__main__":
     tc = TweetCollector()
     tc.readInput()
-    tc.collectOthersTweets()
-    tc.parsingTweeters()
-    tc.parsingMentions()
-    print tc.stars
+    #tc.collectOthersTweets()
+    #tc.read_data('ResultsCS')
+    #tc.parsingTweeters()
+    #tc.parsingMentions()
+    tc.read_stars('StarsCS')
+    #print tc.stars
         #if(tc.getStarname != ''):
     #tc.geoCounter()
-    tc.rankStars()
+    #print "ranking yo"
+    #tc.rankStars()
+    tc.outputdata()
