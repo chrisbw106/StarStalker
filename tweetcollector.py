@@ -220,9 +220,10 @@ class TweetCollector():
         
         rsorted = sorted(ranked, key=lambda data: data[1])
         rsorted = [i for i in reversed(rsorted)]
-        
+        '''
         for i in range(min(10,len(rsorted))):
             print str(i+1) + " " + str(rsorted[i])
+        '''
         return rsorted
     
     def read_data(self,filename):
@@ -239,7 +240,7 @@ class TweetCollector():
         
         for tweet in data:
             self.results[tweet['tId']]= tweet
-        print len(self.results.keys())
+        #print len(self.results.keys())
 
     def read_stars(self,filename):
         #Used to read all tweets from the json file
@@ -251,29 +252,29 @@ class TweetCollector():
         except:
             print "Failed to read data!"
             return []
-        print "The json file has been successfully read!"
+        #print "The json file has been successfully read!"
         
         for star in data:
             self.stars[star['Screen Name']]= star
-        print len(self.stars.keys())
+        #print len(self.stars.keys())
 
     def outputdata(self):
         output = []
         rank = self.rankStars()
-        for i in range(min(10,len(rank))):
-            user = rank[i][0]
-            for multgeo in self.stars[user]['Geo']:
-                if multgeo != None:
-                    output.append(([self.stars[user]['Screen Name']], multgeo['coordinates']))
-             
+        with open('outputCS', 'a+') as outfile:
+            for i in range(min(10,len(rank))):
+                user = rank[i][0]
+                for multgeo in self.stars[user]['Geo']:
+                    if multgeo != None:
+                        output.append((self.stars[user]['Screen Name'], multgeo['coordinates']))
+                        
+        outfile = open('outputCS', 'w')   
         for out in output:
             print out
-        with open('outputCS', 'a+') as outfile:
-            json.dump(output,outfile)
+            json.dump(out,outfile)
             outfile.write('\n')
-
+        outfile.close()
             
-
 if __name__ == "__main__":
     tc = TweetCollector()
     tc.readInput()
