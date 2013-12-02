@@ -220,10 +220,13 @@ class TweetCollector():
         
         rsorted = sorted(ranked, key=lambda data: data[1])
         rsorted = [i for i in reversed(rsorted)]
-        '''
+        
+        outfile = open('rankingsHOU', 'w')  
         for i in range(min(10,len(rsorted))):
-            print str(i+1) + " " + str(rsorted[i])
-        '''
+            outfile.write(str(i+1) + " " + str(rsorted[i]))
+            outfile.write('\n')
+        outfile.close()
+        
         return rsorted
     
     def read_data(self,filename):
@@ -261,18 +264,18 @@ class TweetCollector():
     def outputdata(self):
         output = []
         rank = self.rankStars()
-        with open('outputCS', 'a+') as outfile:
-            for i in range(min(10,len(rank))):
-                user = rank[i][0]
-                for multgeo in self.stars[user]['Geo']:
-                    if multgeo != None:
-                        output.append((self.stars[user]['Screen Name'], multgeo['coordinates']))
-                        
-        outfile = open('outputCS', 'w')   
-        for out in output:
-            print out
-            json.dump(out,outfile)
-            outfile.write('\n')
+        outfile = open('outputHOU', 'w')   
+    
+        for i in range(min(10,len(rank))):
+            user = rank[i][0]
+            for multgeo in self.stars[user]['Geo']:
+                if multgeo != None:
+                    outfile.write(self.stars[user]['Screen Name'])
+                    outfile.write(",")
+                    outfile.write(str(multgeo['coordinates'][0]))
+                    outfile.write(",")
+                    outfile.write(str(multgeo['coordinates'][1]))
+                    outfile.write('\n')
         outfile.close()
             
 if __name__ == "__main__":
@@ -282,7 +285,7 @@ if __name__ == "__main__":
     #tc.read_data('ResultsCS')
     #tc.parsingTweeters()
     #tc.parsingMentions()
-    tc.read_stars('StarsCS')
+    tc.read_stars('StarsHOU')
     #print tc.stars
         #if(tc.getStarname != ''):
     #tc.geoCounter()
