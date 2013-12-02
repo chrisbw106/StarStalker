@@ -29,7 +29,6 @@ fclose($fh);
 
 //Call Python here
 
-//Read Python Rankings
 
 ?>
 
@@ -74,26 +73,41 @@ fclose($fh);
 	}
 	
 	//Adjust map to current set location
-	function codeAddress() {
-	  var address = document.getElementById('flocation').value;
-	  geocoder.geocode( { 'address': address}, function(results, status) {
+	function icodeAddress(ilat,ilng,starname) {
+	  var icon = { url: 'http://oi41.tinypic.com/2zyh8qu.jpg'};
+	  var lat = parseFloat(ilat);
+	  var lng = parseFloat(ilng);
+	  var latlng = new google.maps.LatLng(lat, lng);
+	  geocoder.geocode({'latLng': latlng}, function(results, status) {
 		if (status == google.maps.GeocoderStatus.OK) {
-		  map.setCenter(results[0].geometry.location);
-		  var marker = new google.maps.Marker({
-			  map: map,
-			  position: results[0].geometry.location
-		  });
+		  if (results[1]) {
+			marker = new google.maps.Marker({
+				position: latlng,
+				icon: icon,
+				map: map
+				//text: iname
+				
+			});
+			//infowindow.setContent(results[1].formatted_address);
+			 var infowindow = new google.maps.InfoWindow({
+			    content: starname
+ 			 });
+			infowindow.open(map, marker);
+		  } else {
+			alert('No results found');
+		  }
 		} else {
-		  alert('Geocode was not successful for the following reason: ' + status);
+		  alert('Geocoder failed due to: ' + status);
 		}
 	  });
+
 	}
 	//Get the Lat and Lng for the form fields so the map knows where to go upon loading
 	function getLatLng() {
 		var y=document.getElementById("flat");
 		var z=document.getElementById("flng");
 		var addy = document.getElementById("flocation").value;
-		alert(addy);
+		
 		geocoder.geocode( { 'address': addy}, function(results2, status2) {
 		if (status2 == google.maps.GeocoderStatus.OK) {
 			  var input2 = results2[0].geometry.location;
@@ -109,7 +123,6 @@ fclose($fh);
 	}
 
       google.maps.event.addDomListener(window, 'load', initialize);
-	  window.onload = codeAddress();
     </script>
     
 <title>Star Stalker</title>
@@ -132,10 +145,48 @@ fclose($fh);
 </table>
 <table width="100%" height="100%" border="0" cellspacing="0" cellpadding="0">
   <tr>
-    <td width="300px" valign="top">Location: 
-    <?php echo $_GET["location"]; ?><br>
-Star Name: <?php echo $_GET["starname"]; ?><br>
-<input type="button" value="Find" onclick="codeAddress()">
+    <td width="300px" valign="top">
+    <p>
+      <!--BEGIN DATA DISPLAY -->
+      <?php 
+    //Read Python Rankings
+	$dloc=$_GET["location"];
+	switch ($dloc)
+	{
+	case "College Station, TX":
+	  $f = fopen("outputCS","r");
+	  break;
+	case "Chicago, IL":
+	  $f = fopen("outputCHI","r");
+	  break;
+	case "New York City, NY":
+	  $f = fopen("outputNYC","r");
+	  break;
+	 case "Los Angeles, CA":
+	  $f = fopen("outputLA","r");
+	  break;
+	 case "Houston, TX":
+	  $f = fopen("outputHOU","r");
+	  break;
+	default:
+	  $f = fopen("outputCS","r");
+	}
+
+while ($line = fgets($f)) {
+      list($iname,$ilat,$ilng,) = preg_split("/[\s,]+/",$line);
+	  ?>
+	   <table border="0" cellspacing="0" cellpadding="2" id="slist" align="center">
+      <tr>
+        <td><input type="image" src="listbutton.png" height="39px" width="40px" onclick="icodeAddress(<?php echo $ilat;?>, <?php echo $ilng;?>, '<?php echo $iname;?>' )"></td>
+        
+        <td>
+        <?php echo $iname;?>
+        </td>
+      </tr>
+    </table>
+
+<?php } ?>
+    <!--END DATA DISPLAY -->
 </td>
     <td valign="top"><div id="map-canvas"/></td>
   </tr>
