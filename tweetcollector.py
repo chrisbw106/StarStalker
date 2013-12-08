@@ -12,10 +12,10 @@ class TweetCollector():
         #self.access_token_secret = '6aHe6iKgBTOvSO9Nh4zU5zA1XsvzFkwra8qy3eHaU8eRz'
         
         #David's login
-        self.consumer_key = "zfkFLLrMmDA8ojyqyrYcw"
-        self.consumer_secret = "eTf1oL8uCTp04OVQLtudOh33CA8MVdoIvnoYJppAn0"
-        self.access_token_key = "1972352642-Niy99g2jyZGMIHfDKcKttNjmty0LUCri4dKHdFR"
-        self.access_token_secret = "tbe9vEBgXhIgVuCue5YcPr20W1VRAXJkPwgVRpET4"
+        #self.consumer_key = "zfkFLLrMmDA8ojyqyrYcw"
+        #self.consumer_secret = "eTf1oL8uCTp04OVQLtudOh33CA8MVdoIvnoYJppAn0"
+        #self.access_token_key = "1972352642-Niy99g2jyZGMIHfDKcKttNjmty0LUCri4dKHdFR"
+        #self.access_token_secret = "tbe9vEBgXhIgVuCue5YcPr20W1VRAXJkPwgVRpET4"
         
         #Christine's login
         #self.consumer_key = 'hWjShWB1zy3nFPiZAeiGDw'
@@ -24,10 +24,10 @@ class TweetCollector():
         #self.access_token_secret = 'Ko8y1QhwPo3vScx6vslaLYPqAiuIjoLNXt5Tuyow'
         
         #Keleigh's login
-        #self.consumer_key = 'tHn9c6xyP8Kuyot1UsqhQw'
-        #self.consumer_secret = 'ilwnOuMm2wYZLbyyf7seNG3O943kj9vf5UMifAY8'
-        #self.access_token_key = '344466953-k5pS83JQCqmEezlF7dMcFVlAxUPEFY02Yb4ZtzTh'
-        #self.access_token_secret = 'rf6vGZgt8Neqt1u7lW7xbYyJItr9lx5lMSRpALFSKFU'
+        self.consumer_key = 'tHn9c6xyP8Kuyot1UsqhQw'
+        self.consumer_secret = 'ilwnOuMm2wYZLbyyf7seNG3O943kj9vf5UMifAY8'
+        self.access_token_key = '344466953-k5pS83JQCqmEezlF7dMcFVlAxUPEFY02Yb4ZtzTh'
+        self.access_token_secret = 'rf6vGZgt8Neqt1u7lW7xbYyJItr9lx5lMSRpALFSKFU'
         
         self.auth = tweepy.auth.OAuthHandler(self.consumer_key, self.consumer_secret)
         self.auth.set_access_token(self.access_token_key, self.access_token_secret)
@@ -65,7 +65,7 @@ class TweetCollector():
         
         # go through queries about celeb and find tweets
         for query in self.queries:
-            with open('ResultsCS', 'a+') as outfile:
+            with open('ResultsCS2', 'a+') as outfile:
                 for tweet in tweepy.Cursor(api.search,q= query,geocode = str(self.geolat)+"," + str(self.geolng)+ ",20mi", lang = "en").items(100):
                     self.results[tweet.id] = {}
                     self.results[tweet.id]['Screen Name'] = tweet.user.screen_name
@@ -79,6 +79,9 @@ class TweetCollector():
                     self.results[tweet.id]['Follower Count'] = tweet.user.followers_count
                     self.results[tweet.id]['Verified'] = tweet.user.verified
                     self.results[tweet.id]['Entities']= tweet.entities
+                    self.results[tweet.id]['Description'] = tweet.user.description
+                    self.results[tweet.id]['Profile Image'] = tweet.user.profile_image_url
+                    self.results[tweet.id]['Text'] = tweet.text
                     
                     json.dump(self.results[tweet.id],outfile)
                     outfile.write('\n')
@@ -89,7 +92,7 @@ class TweetCollector():
     	api = tweepy.API(self.auth)
         
         for tId in self.results:
-            with open('StarsCS', 'a+') as outfile:
+            with open('StarsCS2', 'a+') as outfile:
                 user = self.results[tId]
                 if (user['Follower Count']> 20000) or (user['Verified'] == True):
                     if(user['Screen Name'] not in self.stars.keys()):
@@ -102,19 +105,54 @@ class TweetCollector():
                         self.stars[user['Screen Name']]['Direct Star'] = True
                         self.stars[user['Screen Name']]['Mention Count'] = 1
                         self.stars[user['Screen Name']]['Name'] = user['Name']
+                        self.stars[user['Screen Name']]['Description'] = user['Description']
+                        self.stars[user['Screen Name']]['Profile Image'] = user['Profile Image']
                     else:
                         self.stars[user['Screen Name']]['Geo'].append(user['Geo'])
                         self.stars[user['Screen Name']]['Mention Count'] = self.stars[user['Screen Name']]['Mention Count'] + 1
                     json.dump(self.stars[user['Screen Name']],outfile)
                     outfile.write('\n')
-    			
+    
+    def proximityFinder(self,screen_name,text):
+        # Determines proximity of key words and mention
+        starloc = text.find(screen_name)
+        jsloc = text.find("just saw")
+        jmloc = text.find("just met")
+        sploc = text.find("spotted")
+        siloc = text.find("sighted")
+        namelen = len(screen_name)
+        if(jsloc != -1):
+            if(jsloc > starloc):
+                self.stars[screen_name]['Proximity'].append(jsloc - starloc - namelen)
+            else:
+                self.stars[screen_name]['Proximity'].append(starloc - jsloc - len("just saw"))
+            self.stars[screen_name]['Loc Distance']= [('jsloc',jsloc), ('starloc',starloc)]
+        elif(jmloc  != -1):
+            if(jmloc > starloc):
+                self.stars[screen_name]['Proximity'].append(jmloc - starloc - namelen)
+            else:
+                self.stars[screen_name]['Proximity'].append(starloc - jmloc - len("just met"))
+            self.stars[screen_name]['Loc Distance']= [('jmloc',jmloc), ('starloc',starloc)]
+        elif(sploc  != -1):
+            if(sploc > starloc):
+                self.stars[screen_name]['Proximity'].append(sploc - starloc - namelen )
+            else:
+                self.stars[screen_name]['Proximity'].append(starloc - sploc - len("spotted"))
+            self.stars[screen_name]['Loc Distance']= [('sploc',sploc), ('starloc',starloc)]
+        elif(siloc  != -1):
+            if(siloc > starloc):
+                self.stars[screen_name]['Proximity'].append(siloc - starloc - namelen)
+            else:
+                self.stars[screen_name]['Proximity'].append(starloc - siloc - len("sighted"))
+            self.stars[screen_name]['Loc Distance']= [('siloc',siloc), ('starloc',starloc)]
+            
     def parsingMentions(self):
         # going through mentioned users to determine if talking about celeb
         
         api = tweepy.API(self.auth)
         
         for tId in self.results.keys():
-        	with open('StarsCS', 'a+') as outfile:
+        	with open('StarsCS2', 'a+') as outfile:
 	            for mentionedPerson in self.results[tId]['Entities']['user_mentions']:
                         mentionedUser = api.get_user(mentionedPerson['screen_name'])
                         if(mentionedUser.followers_count > 20000) or (mentionedUser.verified == True):
@@ -128,9 +166,16 @@ class TweetCollector():
                                 self.stars[mentionedUser.screen_name]['Direct Star'] = False
                                 self.stars[mentionedUser.screen_name]['Mention Count'] = 1
                                 self.stars[mentionedUser.screen_name]['Name'] = mentionedUser.name
+                                self.stars[mentionedUser.screen_name]['Description'] = mentionedUser.description
+                                self.stars[mentionedUser.screen_name]['Profile Image'] = mentionedUser.profile_image_url
+                                self.stars[mentionedUser.screen_name]['Tweet Text'] = [self.results[tId]['Text']]
+                                self.stars[mentionedUser.screen_name]['Proximity']= []
+                                self.proximityFinder(mentionedUser.screen_name, self.results[tId]['Text'])
                             else:
                                 self.stars[mentionedUser.screen_name]['Geo'].append(self.results[tId]['Geo'])
                                 self.stars[mentionedUser.screen_name]['Mention Count'] = self.stars[mentionedUser.screen_name]['Mention Count'] + 1
+                                self.stars[mentionedUser.screen_name]['Tweet Text'].append(self.results[tId]['Text'])
+                                self.proximityFinder(mentionedUser.screen_name, self.results[tId]['Text'])
                                 
                             json.dump(self.stars[mentionedUser.screen_name],outfile)
                             outfile.write('\n')
@@ -145,6 +190,7 @@ class TweetCollector():
         for star in starKeys:
             if(self.stars[star]['Name'] != self.starname):
                 self.stars.pop(star, None)
+                    
     '''
     def geoCounter(self):
         # populate geoDict with locations and the number of mentions of that locationo
@@ -221,7 +267,7 @@ class TweetCollector():
         rsorted = sorted(ranked, key=lambda data: data[1])
         rsorted = [i for i in reversed(rsorted)]
         
-        outfile = open('rankingsHOU', 'w')  
+        outfile = open('rankingsCS2', 'w')
         for i in range(min(10,len(rsorted))):
             outfile.write(str(i+1) + " " + str(rsorted[i]))
             outfile.write('\n')
@@ -264,7 +310,7 @@ class TweetCollector():
     def outputdata(self):
         output = []
         rank = self.rankStars()
-        outfile = open('outputHOU', 'w')   
+        outfile = open('outputCS2', 'w')
     
         for i in range(min(10,len(rank))):
             user = rank[i][0]
@@ -275,6 +321,14 @@ class TweetCollector():
                     outfile.write(str(multgeo['coordinates'][0]))
                     outfile.write(",")
                     outfile.write(str(multgeo['coordinates'][1]))
+                    outfile.write(",")
+                    outfile.write(self.stars[user]['Name'])
+                    outfile.write(",")
+                    outfile.write(self.stars[user]['Profile Image'])
+                    outfile.write(",")
+                    outfile.write("http://twitter.com/" + str(self.stars[user]['Screen Name']))
+                    outfile.write(",")
+                    outfile.write("/" + self.stars[user]['Description'] + "/")
                     outfile.write('\n')
         outfile.close()
             
@@ -282,13 +336,13 @@ if __name__ == "__main__":
     tc = TweetCollector()
     tc.readInput()
     #tc.collectOthersTweets()
-    #tc.read_data('ResultsCS')
-    #tc.parsingTweeters()
-    #tc.parsingMentions()
-    tc.read_stars('StarsHOU')
+    tc.read_data('ResultsCS2')
+    tc.parsingTweeters()
+    tc.parsingMentions()
+    #tc.read_stars('StarsCS2')
     #print tc.stars
         #if(tc.getStarname != ''):
     #tc.geoCounter()
     #print "ranking yo"
     #tc.rankStars()
-    tc.outputdata()
+    #tc.outputdata()
