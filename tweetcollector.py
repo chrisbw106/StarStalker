@@ -18,16 +18,16 @@ class TweetCollector():
         #self.access_token_secret = "tbe9vEBgXhIgVuCue5YcPr20W1VRAXJkPwgVRpET4"
         
         #Christine's login
-        #self.consumer_key = 'hWjShWB1zy3nFPiZAeiGDw'
-        #self.consumer_secret = 'WVAiwKleMPcU6odK9GDgN78z2TO33besdXhWrmUEQ'
-        #self.access_token_key = '496512154-WTtSOwcMnI98KC2gb5qI1P34tig1899EH03cPuBf'
-        #self.access_token_secret = 'Ko8y1QhwPo3vScx6vslaLYPqAiuIjoLNXt5Tuyow'
+        self.consumer_key = 'hWjShWB1zy3nFPiZAeiGDw'
+        self.consumer_secret = 'WVAiwKleMPcU6odK9GDgN78z2TO33besdXhWrmUEQ'
+        self.access_token_key = '496512154-WTtSOwcMnI98KC2gb5qI1P34tig1899EH03cPuBf'
+        self.access_token_secret = 'Ko8y1QhwPo3vScx6vslaLYPqAiuIjoLNXt5Tuyow'
         
         #Keleigh's login
-        self.consumer_key = 'tHn9c6xyP8Kuyot1UsqhQw'
-        self.consumer_secret = 'ilwnOuMm2wYZLbyyf7seNG3O943kj9vf5UMifAY8'
-        self.access_token_key = '344466953-k5pS83JQCqmEezlF7dMcFVlAxUPEFY02Yb4ZtzTh'
-        self.access_token_secret = 'rf6vGZgt8Neqt1u7lW7xbYyJItr9lx5lMSRpALFSKFU'
+        #self.consumer_key = 'tHn9c6xyP8Kuyot1UsqhQw'
+        #self.consumer_secret = 'ilwnOuMm2wYZLbyyf7seNG3O943kj9vf5UMifAY8'
+        #self.access_token_key = '344466953-k5pS83JQCqmEezlF7dMcFVlAxUPEFY02Yb4ZtzTh'
+        #self.access_token_secret = 'rf6vGZgt8Neqt1u7lW7xbYyJItr9lx5lMSRpALFSKFU'
         
         self.auth = tweepy.auth.OAuthHandler(self.consumer_key, self.consumer_secret)
         self.auth.set_access_token(self.access_token_key, self.access_token_secret)
@@ -81,7 +81,8 @@ class TweetCollector():
                     self.results[tweet.id]['Entities']= tweet.entities
                     self.results[tweet.id]['Description'] = tweet.user.description
                     self.results[tweet.id]['Profile Image'] = tweet.user.profile_image_url
-                    self.results[tweet.id]['Text'] = tweet.text
+                    self.results[tweet.id]['Text'] = tweet.text.lower()
+                    
                     
                     json.dump(self.results[tweet.id],outfile)
                     outfile.write('\n')
@@ -107,6 +108,8 @@ class TweetCollector():
                         self.stars[user['Screen Name']]['Name'] = user['Name']
                         self.stars[user['Screen Name']]['Description'] = user['Description']
                         self.stars[user['Screen Name']]['Profile Image'] = user['Profile Image']
+                        self.stars[user['Screen Name']]['Proximity'] = [1]
+                        self.stars[user['Screen Name']]['Text'] = self.results[tId]['Text']
                     else:
                         self.stars[user['Screen Name']]['Geo'].append(user['Geo'])
                         self.stars[user['Screen Name']]['Mention Count'] = self.stars[user['Screen Name']]['Mention Count'] + 1
@@ -115,7 +118,7 @@ class TweetCollector():
     
     def proximityFinder(self,screen_name,text):
         # Determines proximity of key words and mention
-        starloc = text.find(screen_name)
+        starloc = text.find(str(screen_name).lower())
         jsloc = text.find("just saw")
         jmloc = text.find("just met")
         sploc = text.find("spotted")
@@ -123,27 +126,27 @@ class TweetCollector():
         namelen = len(screen_name)
         if(jsloc != -1):
             if(jsloc > starloc):
-                self.stars[screen_name]['Proximity'].append(jsloc - starloc - namelen)
+                self.stars[screen_name]['Proximity'].append(math.fabs(jsloc - starloc - namelen))
             else:
-                self.stars[screen_name]['Proximity'].append(starloc - jsloc - len("just saw"))
+                self.stars[screen_name]['Proximity'].append(math.fabs(starloc - jsloc - len("just saw ")))
             self.stars[screen_name]['Loc Distance']= [('jsloc',jsloc), ('starloc',starloc)]
         elif(jmloc  != -1):
             if(jmloc > starloc):
-                self.stars[screen_name]['Proximity'].append(jmloc - starloc - namelen)
+                self.stars[screen_name]['Proximity'].append(math.fabs(jmloc - starloc - namelen))
             else:
-                self.stars[screen_name]['Proximity'].append(starloc - jmloc - len("just met"))
+                self.stars[screen_name]['Proximity'].append(math.fabs(starloc - jmloc - len("just met ")))
             self.stars[screen_name]['Loc Distance']= [('jmloc',jmloc), ('starloc',starloc)]
         elif(sploc  != -1):
             if(sploc > starloc):
-                self.stars[screen_name]['Proximity'].append(sploc - starloc - namelen )
-            else:
-                self.stars[screen_name]['Proximity'].append(starloc - sploc - len("spotted"))
+                self.stars[screen_name]['Proximity'].append(math.fabs(sploc - starloc - namelen))
+            else: 
+                self.stars[screen_name]['Proximity'].append(math.fabs(starloc - sploc - len("spotted ")))
             self.stars[screen_name]['Loc Distance']= [('sploc',sploc), ('starloc',starloc)]
         elif(siloc  != -1):
             if(siloc > starloc):
-                self.stars[screen_name]['Proximity'].append(siloc - starloc - namelen)
+                self.stars[screen_name]['Proximity'].append(math.fabs(siloc - starloc - namelen))
             else:
-                self.stars[screen_name]['Proximity'].append(starloc - siloc - len("sighted"))
+                self.stars[screen_name]['Proximity'].append(math.fabs(starloc - siloc - len("sighted ")))
             self.stars[screen_name]['Loc Distance']= [('siloc',siloc), ('starloc',starloc)]
             
     def parsingMentions(self):
@@ -170,12 +173,12 @@ class TweetCollector():
                                 self.stars[mentionedUser.screen_name]['Profile Image'] = mentionedUser.profile_image_url
                                 self.stars[mentionedUser.screen_name]['Tweet Text'] = [self.results[tId]['Text']]
                                 self.stars[mentionedUser.screen_name]['Proximity']= []
-                                self.proximityFinder(mentionedUser.screen_name, self.results[tId]['Text'])
+                                self.proximityFinder(mentionedUser.screen_name, self.results[tId]['Text'].lower())
                             else:
                                 self.stars[mentionedUser.screen_name]['Geo'].append(self.results[tId]['Geo'])
                                 self.stars[mentionedUser.screen_name]['Mention Count'] = self.stars[mentionedUser.screen_name]['Mention Count'] + 1
                                 self.stars[mentionedUser.screen_name]['Tweet Text'].append(self.results[tId]['Text'])
-                                self.proximityFinder(mentionedUser.screen_name, self.results[tId]['Text'])
+                                self.proximityFinder(mentionedUser.screen_name, self.results[tId]['Text'].lower())
                                 
                             json.dump(self.stars[mentionedUser.screen_name],outfile)
                             outfile.write('\n')
@@ -240,7 +243,12 @@ class TweetCollector():
                 geoVal = 1
         vec.append(geoVal)
         vec.append(1 if self.stars[star]['Direct Star'] else 0)
-        
+        if not self.stars[star]['Proximity']:
+            pnum = 140
+        else:
+            pnum = min(self.stars[star]['Proximity'])
+        pnum = 1-(pnum/142)
+        vec.append(pnum)
         return vec
 
     def rankStars(self):
@@ -248,7 +256,7 @@ class TweetCollector():
         ranked = []
         
         #Vector =[Verification, #Mentions, GeoTaged, FromCeleb]    
-        ideal = [1,5,1,1]
+        ideal = [1,5,1,1,1]
         
         #Rank Each Star based on features and ideal similarity
         for star in self.stars.keys():
@@ -258,11 +266,17 @@ class TweetCollector():
             rank = rank + .3*(math.log10(self.stars[star]['Follower Count'])/10)
             rank = rank + .2*(starvec[0])   #verification
             rank = rank + .15*(1+math.log10(starvec[1])/10)  #mention count
-            rank = rank + .3*(starvec[2])   #geo
+            rank = rank + .05*(starvec[2])   #geo
+            if not self.stars[star]['Proximity']:
+                pnum = 140
+            else:
+                pnum = min(self.stars[star]['Proximity'])
+            pnum = 1-(pnum/142)
+            rank = rank + .25*(pnum)
             geo = .3 * (starvec[2])
             rank = rank + .05*(starvec[3])   #directStar
             rank = rank + cos
-            ranked.append((star,rank,cos,geo))
+            ranked.append((star,rank))
         
         rsorted = sorted(ranked, key=lambda data: data[1])
         rsorted = [i for i in reversed(rsorted)]
@@ -328,7 +342,7 @@ class TweetCollector():
                     outfile.write(",")
                     outfile.write("http://twitter.com/" + str(self.stars[user]['Screen Name']))
                     outfile.write(",")
-                    outfile.write("/" + self.stars[user]['Description'] + "/")
+                    outfile.write("\"" + self.stars[user]['Description'] + "\"")
                     outfile.write('\n')
         outfile.close()
             
@@ -336,13 +350,13 @@ if __name__ == "__main__":
     tc = TweetCollector()
     tc.readInput()
     #tc.collectOthersTweets()
-    tc.read_data('ResultsCS2')
-    tc.parsingTweeters()
-    tc.parsingMentions()
-    #tc.read_stars('StarsCS2')
+    #tc.read_data('ResultsCS2')
+    #tc.parsingTweeters()
+    #tc.parsingMentions()
+    tc.read_stars('StarsCS2')
     #print tc.stars
         #if(tc.getStarname != ''):
     #tc.geoCounter()
-    #print "ranking yo"
+    print "ranking yo"
     #tc.rankStars()
-    #tc.outputdata()
+    tc.outputdata()
