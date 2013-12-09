@@ -6,18 +6,12 @@ if(!isset($_GET['location'])){
 if(($_GET['location'] == "City, State") or ($_GET['location'] == "")){
 	header('Location: index.html');
 }
-if(($_GET['location'] == "City, State") and ($_GET['starname'] == "Star Name (optional)")){
-	header('Location: index.html');
-}
+
 //If so save it to file for the python to use
 $input_location =  $_GET["location"] . "\n";
-$input_name = $_GET["starname"] . "\n";
 $input_lat = $_GET["lat"] . "\n";
 $input_lng = $_GET["lng"];
-
-if(($_GET['starname'] == "Star Name (optional)") or ($_GET['starname'] == "")){
-	$input_name = "null\n";
-}
+$input_name = "null\n";
 
 $inputFile = "input_data.txt";
 $fh = fopen($inputFile, 'w') or die("Unable to use input!");
@@ -73,7 +67,17 @@ fclose($fh);
 	}
 	
 	//Adjust map to current set location
-	function icodeAddress(ilat,ilng,starname) {
+	function icodeAddress(ilat,ilng,starname,timage,ttext) {
+	  var contentString = 
+			'<table border="0" cellspacing="2" cellpadding="0">'+
+			'<tr><td>'+
+			'<table border="0" cellspacing="2" cellpadding="0">'+
+			'<tr>'+
+			'<td><img src="'+timage+'"/></td>'+
+			'<td id="cpname">'+starname+'</td>'+
+			'</tr></table></td></tr><tr>'+
+			'<td id="cptext" width="250px">'+ttext+'</td>'+
+			'</tr></table>';		
 	  var icon = { url: 'http://oi41.tinypic.com/2zyh8qu.jpg'};
 	  var lat = parseFloat(ilat);
 	  var lng = parseFloat(ilng);
@@ -90,7 +94,7 @@ fclose($fh);
 			});
 			//infowindow.setContent(results[1].formatted_address);
 			 var infowindow = new google.maps.InfoWindow({
-			    content: starname
+			    content: contentString
  			 });
 			infowindow.open(map, marker);
 		  } else {
@@ -131,13 +135,13 @@ fclose($fh);
 <body>
 <table id="searchbar" width="100%"  height="75px" border="0" cellspacing="0" cellpadding="0">
   <tr>
-    <td width="350px"><a href="index.html"><img src="sbanner.png" width="350" height="75" alt="Star Stalker"></a></td>
+    <td width="350px"><a href="index.html"><img src="imgs/sbanner.png" width="350" height="75" alt="Star Stalker"></a></td>
     <td><form id="stalk" name="stalk" method="get" action="s.php" onsubmit="this.submit();return false;"> <table width="600" border="0" cellspacing="0" cellpadding="0">
           <tr valign="middle">
-            <td valign="middle" align="center"><input name="location" type="text" id="flocation" value="<?php echo $_GET["location"]; ?>" onChange="getLatLng()"/></td>
-            <td valign="middle" align="center"><input name="starname" type="text" id="fstarname" value="<?php echo $_GET["starname"]; ?>" /></td>      <input name="lat" type="hidden" id="flat" value="<?php echo $_GET["lat"]; ?>" />
+            <td valign="middle" align="center" width="250"><input name="location" type="text" id="flocation" value="<?php echo $_GET["location"]; ?>" onChange="getLatLng()"/></td>
+                  <input name="lat" type="hidden" id="flat" value="<?php echo $_GET["lat"]; ?>" />
       		<input name="lng" type="hidden" id="flng" value="<?php echo $_GET["lng"]; ?>" />
-            <td valign="middle" align="center"><input type="image" id="submit" src="slbutton.png" height="51" width="50" /></td>
+            <td valign="middle" align="left"><input type="image" id="submit" src="imgs/slbutton.png" height="51" width="50" /></td>
           </tr>
         </table>      
     </form></td>
@@ -154,7 +158,7 @@ fclose($fh);
 	switch ($dloc)
 	{
 	case "College Station, TX":
-	  $f = fopen("outputCS","r");
+	  $f = fopen("outputCS2","r");
 	  break;
 	case "Chicago, IL":
 	  $f = fopen("outputCHI","r");
@@ -169,23 +173,28 @@ fclose($fh);
 	  $f = fopen("outputHOU","r");
 	  break;
 	default:
-	  $f = fopen("outputCS","r");
+	  $f = fopen("outputCS2","r");
 	}
 
-while ($line = fgets($f)) {
-      list($iname,$ilat,$ilng,) = preg_split("/[\s,]+/",$line);
+while (! feof($f)) {
+	  $idata =fgetcsv($f);
+	  if(!empty($idata[0])){
 	  ?>
-	   <table border="0" cellspacing="0" cellpadding="2" id="slist" align="center">
+	   <table border="0" cellspacing="3" cellpadding="2" id="slist" align="center">
       <tr>
-        <td><input type="image" src="listbutton.png" height="39px" width="40px" onclick="icodeAddress(<?php echo $ilat;?>, <?php echo $ilng;?>, '<?php echo $iname;?>' )"></td>
-        
-        <td>
-        <?php echo $iname;?>
+        <td width="40px"><input type="image" src="imgs/listbutton.png" height="39px" width="40px" onclick="icodeAddress(<?php echo $idata[1];?>, <?php echo $idata[2];?>,'<?php $goodName = str_replace("'", '', $idata[3]); echo $goodName ?>','<?php echo $idata[4];?>','<?php echo $idata[6];?>')"></td>
+        <td width="178px">
+        <?php echo $idata[3];?>
         </td>
+        <td width="32px">
+        <a href="<?php echo $idata[5];?>" target="_new"><img src="imgs/twitter_icon.png" width="30" height="30"/></a>
+        </td>
+
       </tr>
     </table>
+<?php }} fclose($f); ?>
 
-<?php } ?>
+
     <!--END DATA DISPLAY -->
 </td>
     <td valign="top"><div id="map-canvas"/></td>
