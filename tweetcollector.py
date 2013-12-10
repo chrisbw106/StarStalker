@@ -307,24 +307,23 @@ class TweetCollector():
             user = rank[i][0]
             for index in range(len(self.stars[user]['Geo'])):
                 if self.stars[user]['Geo'][index] != None:
-                    outfile.write(self.stars[user]['Screen Name'])
+                    outfile.write(self.stars[user]['Screen Name'])#0
                     outfile.write(",")
-                    outfile.write(str(self.stars[user]['Geo'][index]['coordinates'][0]))
+                    outfile.write(str(self.stars[user]['Geo'][index]['coordinates'][0]))#1
                     outfile.write(",")
-                    outfile.write(str(self.stars[user]['Geo'][index]['coordinates'][1]))
+                    outfile.write(str(self.stars[user]['Geo'][index]['coordinates'][1]))#2
                     outfile.write(",")
-                    outfile.write(self.stars[user]['Name'])
+                    outfile.write(self.stars[user]['Name'])#3
                     outfile.write(",")
-                    outfile.write(self.stars[user]['Profile Image'])
+                    outfile.write(self.stars[user]['Profile Image'])#4
                     outfile.write(",")
-                    outfile.write("http://twitter.com/" + str(self.stars[user]['Screen Name']))
+                    outfile.write("http://twitter.com/" + str(self.stars[user]['Screen Name']))#5
                     outfile.write(",")
-                    outfile.write("\"" + self.stars[user]['Description'].encode('utf-8') + "\"")
+                    outfile.write("\"" + self.stars[user]['Description'].encode('utf-8') + "\"")#6
                     outfile.write(",")
-                    outfile.write(str(self.stars[user]['Created']))
+                    outfile.write(str(self.stars[user]['Created']))#7
                     outfile.write(",")
-                    print self.stars[user]['Text'][index]
-                    outfile.write(self.stars[user]['Text'][index].encode('utf-8'))
+                    outfile.write(self.stars[user]['Text'][index].encode('utf-8'))#8
                     outfile.write('\n')
         outfile.close()
             

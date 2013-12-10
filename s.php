@@ -67,16 +67,16 @@ fclose($fh);
 	}
 	
 	//Adjust map to current set location
-	function icodeAddress(ilat,ilng,starname,timage,ttext) {
+	function icodeAddress(ilat,ilng,starname,timage,ttext,scname,dt) {
 	  var contentString = 
 			'<table border="0" cellspacing="2" cellpadding="0">'+
 			'<tr><td>'+
 			'<table border="0" cellspacing="2" cellpadding="0">'+
 			'<tr>'+
 			'<td><img src="'+timage+'"/></td>'+
-			'<td id="cpname">'+starname+'</td>'+
+			'<td id="cpname">'+starname+' @'+scname+'</td>'+
 			'</tr></table></td></tr><tr>'+
-			'<td id="cptext" width="250px">'+ttext+'</td>'+
+			'<td id="cptext" width="250px">'+dt+' '+ttext+'</td>'+
 			'</tr></table>';		
 	  var icon = { url: 'http://oi41.tinypic.com/2zyh8qu.jpg'};
 	  var lat = parseFloat(ilat);
@@ -158,7 +158,7 @@ fclose($fh);
 	switch ($dloc)
 	{
 	case "College Station, TX":
-	  $f = fopen("outputCS2","r");
+	  $f = fopen("outputCS","r");
 	  break;
 	case "Chicago, IL":
 	  $f = fopen("outputCHI","r");
@@ -166,24 +166,31 @@ fclose($fh);
 	case "New York City, NY":
 	  $f = fopen("outputNYC","r");
 	  break;
+	 case "Atlanta, GA":
+	  $f = fopen("outputATL","r");
+	  break;
 	 case "Los Angeles, CA":
 	  $f = fopen("outputLA","r");
 	  break;
 	 case "Houston, TX":
 	  $f = fopen("outputHOU","r");
 	  break;
+	  case "Toronto, ON":
+	  $f = fopen("outputTOR","r");
+	  break;
 	default:
-	  $f = fopen("outputCS2","r");
+	  $f = fopen("outputCS","r");
 	}
 
 while (! feof($f)) {
 	  $idata =fgetcsv($f);
 	  if(!empty($idata[0])){
 	  ?>
+      
 	   <table border="0" cellspacing="3" cellpadding="2" id="slist" align="center">
       <tr>
-        <td width="40px"><input type="image" src="imgs/listbutton.png" height="39px" width="40px" onclick="icodeAddress(<?php echo $idata[1];?>, <?php echo $idata[2];?>,'<?php $goodName = str_replace("'", '', $idata[3]); echo $goodName ?>','<?php echo $idata[4];?>','<?php echo $idata[6];?>')"></td>
-        <td width="178px">
+        <td width="40px"><input type="image" src="imgs/listbutton.png" height="39px" width="40px" onclick="icodeAddress(<?php echo $idata[1];?>, <?php echo $idata[2];?>,'<?php $goodName = str_replace("'", '', $idata[3]); echo $goodName ?>','<?php echo $idata[4];?>','<?php echo $idata[8];?>','<?php echo $idata[0];?>','<?php echo $idata[7];?>')"></td>
+        <td width="178px" align="center">
         <?php echo $idata[3];?>
         </td>
         <td width="32px">
