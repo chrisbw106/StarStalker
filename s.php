@@ -152,7 +152,7 @@ fclose($fh);
     <td width="300px" align="center" valign="top">
     
       <!--BEGIN DATA DISPLAY -->
-      <div id="locatedstars">Stars Located In <?php echo $_GET["location"]; ?></div><div id="sspace"></div>
+      <div id="locatedstars">Stars Located In <?php echo $_GET["location"]; ?></div>
       <?php 
     //Read Python Rankings
 	//This is for hardcoded data which we used for demos/presentations because of rate limit issues
@@ -241,7 +241,7 @@ if($count <10)
 	}
 
 ?>
-<div id="locatedstars">Other Trending Stars </div></div><div id="sspace"></div>
+<div id="locatedstars">Other Trending Stars </div></div>
 <?php
 while (! feof($t)) {
 	  $itdata =fgetcsv($t);
