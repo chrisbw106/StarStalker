@@ -22,7 +22,7 @@ fwrite($fh, $input_lng);
 fclose($fh);
 
 //Call Python here
-
+//exec("python tweetcollector.py")
 
 ?>
 
@@ -149,11 +149,13 @@ fclose($fh);
 </table>
 <table width="100%" height="100%" border="0" cellspacing="0" cellpadding="0">
   <tr>
-    <td width="300px" valign="top">
-    <p>
+    <td width="300px" align="center" valign="top">
+    
       <!--BEGIN DATA DISPLAY -->
+      <div id="locatedstars">Stars Located In <?php echo $_GET["location"]; ?></div><div id="sspace"></div>
       <?php 
     //Read Python Rankings
+	//This is for hardcoded data which we used for demos/presentations because of rate limit issues
 	$dloc=$_GET["location"];
 	switch ($dloc)
 	{
@@ -181,15 +183,24 @@ fclose($fh);
 	default:
 	  $f = fopen("outputCS","r");
 	}
-
+$count = 0;
 while (! feof($f)) {
 	  $idata =fgetcsv($f);
 	  if(!empty($idata[0])){
-	  ?>
-      
-	   <table border="0" cellspacing="3" cellpadding="2" id="slist" align="center">
+	  	$count++;
+		
+		?>
+	   <table border="0" cellspacing="0" cellpadding="0" id="slist" align="center">
       <tr>
-        <td width="40px"><input type="image" src="imgs/listbutton.png" height="39px" width="40px" onclick="icodeAddress(<?php echo $idata[1];?>, <?php echo $idata[2];?>,'<?php $goodName = str_replace("'", '', $idata[3]); echo $goodName ?>','<?php echo $idata[4];?>','<?php echo $idata[8];?>','<?php echo $idata[0];?>','<?php echo $idata[7];?>')"></td>
+        <td width="40px"><input type="image" src="imgs/listbutton.png" height="39px" width="40px" onclick="icodeAddress(
+		<?php echo $idata[1]; //lat?>, 
+		<?php echo $idata[2]; //lng?>,
+        '<?php $goodName = str_replace("'", '', $idata[3]); echo $goodName; //name?>',
+        '<?php echo $idata[4]; // twitter pic ?>',
+        '<?php $goodText = str_replace("'", '', $idata[8]); $goodText = str_replace('"', '', $goodText); echo $goodText; // tweet text?>',
+        '<?php echo $idata[0]; // screen name?>',
+        '<?php echo $idata[7]; // date?>')">
+        </td>
         <td width="178px" align="center">
         <?php echo $idata[3];?>
         </td>
@@ -199,7 +210,60 @@ while (! feof($f)) {
 
       </tr>
     </table>
-<?php }} fclose($f); ?>
+<?php }} fclose($f); 
+if($count <10)
+{ 
+	switch ($dloc)
+	{
+	case "College Station, TX":
+	  $t = fopen("trendCS","r");
+	  break;
+	case "Chicago, IL":
+	  $t = fopen("trendCHI","r");
+	  break;
+	case "New York City, NY":
+	  $t = fopen("trendNYC","r");
+	  break;
+	 case "Atlanta, GA":
+	  $t = fopen("trendATL","r");
+	  break;
+	 case "Los Angeles, CA":
+	  $t = fopen("trendLA","r");
+	  break;
+	 case "Houston, TX":
+	  $t = fopen("trendHOU","r");
+	  break;
+	  case "Toronto, ON":
+	  $t = fopen("trendTOR","r");
+	  break;
+	default:
+	  $t = fopen("trendCS","r");
+	}
+
+?>
+<div id="locatedstars">Other Trending Stars </div></div><div id="sspace"></div>
+<?php
+while (! feof($t)) {
+	  $itdata =fgetcsv($t);
+	  if(!empty($itdata[0])){
+	  	?>
+      
+	   <table border="0" cellspacing="0" cellpadding="0" id="slist" align="center">
+      <tr>
+        
+        <td width="178px" align="center">
+        <?php echo $itdata[0];?>
+        </td>
+        <td width="32px">
+        <a href="<?php echo $itdata[1];?>" target="_new"><img src="imgs/twitter_icon.png" width="30" height="30"/></a>
+        </td>
+       
+
+      </tr>
+    </table> 
+<?php }} fclose($t); 
+}
+?>
 
 
     <!--END DATA DISPLAY -->

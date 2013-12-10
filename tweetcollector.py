@@ -12,10 +12,10 @@ class TweetCollector():
         #self.access_token_secret = '6aHe6iKgBTOvSO9Nh4zU5zA1XsvzFkwra8qy3eHaU8eRz'
         
         #David's login
-        self.consumer_key = "zfkFLLrMmDA8ojyqyrYcw"
-        self.consumer_secret = "eTf1oL8uCTp04OVQLtudOh33CA8MVdoIvnoYJppAn0"
-        self.access_token_key = "1972352642-Niy99g2jyZGMIHfDKcKttNjmty0LUCri4dKHdFR"
-        self.access_token_secret = "tbe9vEBgXhIgVuCue5YcPr20W1VRAXJkPwgVRpET4"
+        #self.consumer_key = "zfkFLLrMmDA8ojyqyrYcw"
+        #self.consumer_secret = "eTf1oL8uCTp04OVQLtudOh33CA8MVdoIvnoYJppAn0"
+        #self.access_token_key = "1972352642-Niy99g2jyZGMIHfDKcKttNjmty0LUCri4dKHdFR"
+        #self.access_token_secret = "tbe9vEBgXhIgVuCue5YcPr20W1VRAXJkPwgVRpET4"
         
         #Christine's login
         #self.consumer_key = 'hWjShWB1zy3nFPiZAeiGDw'
@@ -42,7 +42,8 @@ class TweetCollector():
         self.stars = {}
     
     def readInput(self):
-        lines = [line.strip() for line in open('input_dataTOR.txt')]
+        #Get Data from PHP - should be input_data.txt
+        lines = [line.strip() for line in open('input_dataCS.txt')]
         self.location = lines[0]
         self.starname = lines[1]
         self.geolat = lines[2]
@@ -65,8 +66,8 @@ class TweetCollector():
         
         # go through queries about celeb and find tweets
         for query in self.queries:
-            with open('ResultsTOR', 'a+') as outfile:
-                for tweet in tweepy.Cursor(api.search,q= query,geocode = str(self.geolat)+"," + str(self.geolng)+ ",20mi", lang = "en").items(75):
+            with open('ResultsCS', 'a+') as outfile:
+                for tweet in tweepy.Cursor(api.search,q= query,geocode = str(self.geolat)+"," + str(self.geolng)+ ",20mi", lang = "en").items(300):
                     self.results[tweet.id] = {}
                     self.results[tweet.id]['Screen Name'] = tweet.user.screen_name
                     self.results[tweet.id]['Name'] = tweet.user.name
@@ -93,7 +94,7 @@ class TweetCollector():
     	api = tweepy.API(self.auth)
         
         for tId in self.results:
-            with open('StarsTOR', 'a+') as outfile:
+            with open('StarsCS', 'a+') as outfile:
                 user = self.results[tId]
                 if (user['Follower Count']> 20000) or (user['Verified'] == True):
                     if(user['Screen Name'] not in self.stars.keys()):
@@ -156,7 +157,7 @@ class TweetCollector():
         api = tweepy.API(self.auth)
         
         for tId in self.results.keys():
-        	with open('StarsTOR', 'a+') as outfile:
+        	with open('StarsCS', 'a+') as outfile:
 	            for mentionedPerson in self.results[tId]['Entities']['user_mentions']:
                         mentionedUser = api.get_user(mentionedPerson['screen_name'])
                         if(mentionedUser.followers_count > 20000) or (mentionedUser.verified == True):
@@ -210,6 +211,7 @@ class TweetCollector():
         return dot/(qmag*dmag)
 
     def buildVector(self, star):
+        #build the ideal doc vector based on tweet data of star
         vec = []
         
         vec.append(1 if self.stars[star]['Verified'] else 0)
@@ -258,7 +260,7 @@ class TweetCollector():
         rsorted = sorted(ranked, key=lambda data: data[1])
         rsorted = [i for i in reversed(rsorted)]
         
-        outfile = open('rankingsTOR', 'w')
+        outfile = open('rankingsCS', 'w')
         for i in range(min(10,len(rsorted))):
             outfile.write(str(i+1) + " " + str(rsorted[i]))
             outfile.write('\n')
@@ -284,6 +286,7 @@ class TweetCollector():
 
     def read_stars(self,filename):
         #Used to read all tweets from the json file
+        #normally would just read the 'stars' file
         data = []
         try:
             with open(filename) as f:
@@ -299,10 +302,12 @@ class TweetCollector():
         #print len(self.stars.keys())
 
     def outputdata(self):
+        #Normally just makes 'output' and 'trend' files
         output = []
         rank = self.rankStars()
-        outfile = open('outputTOR', 'w')
-    
+        outfile = open('outputCS', 'w')
+        trendfile = open('trendCS', 'w')
+        
         for i in range(min(10,len(rank))):
             user = rank[i][0]
             for index in range(len(self.stars[user]['Geo'])):
@@ -313,7 +318,7 @@ class TweetCollector():
                     outfile.write(",")
                     outfile.write(str(self.stars[user]['Geo'][index]['coordinates'][1]))#2
                     outfile.write(",")
-                    outfile.write(self.stars[user]['Name'])#3
+                    outfile.write("\""+self.stars[user]['Name']+ "\"")#3
                     outfile.write(",")
                     outfile.write(self.stars[user]['Profile Image'])#4
                     outfile.write(",")
@@ -321,23 +326,31 @@ class TweetCollector():
                     outfile.write(",")
                     outfile.write("\"" + self.stars[user]['Description'].encode('utf-8') + "\"")#6
                     outfile.write(",")
-                    outfile.write(str(self.stars[user]['Created']))#7
+                    date = str(self.stars[user]['Created'][0])
+                    outfile.write(str("\""+date+"\""))#7
                     outfile.write(",")
-                    outfile.write(self.stars[user]['Text'][index].encode('utf-8'))#8
+                    outfile.write("\"" +self.stars[user]['Text'][index].encode('utf-8')+"\"")#8
                     outfile.write('\n')
+                else:
+                    trendfile.write("\""+self.stars[user]['Name']+ "\"")#3
+                    trendfile.write(",")
+                    trendfile.write("http://twitter.com/" + str(self.stars[user]['Screen Name']))
+                    trendfile.write('\n')
+                    
         outfile.close()
+    
+        
             
 if __name__ == "__main__":
-    tc = TweetCollector()
+    #tc = TweetCollector()
     #tc.readInput()
     #tc.collectOthersTweets()
         
-    #tc.read_data('ResultsTOR')
+    #tc.read_data('ResultsCS')
     #print "parsing tweeters"
     #tc.parsingTweeters()
     #print "parsing mentions"
     #tc.parsingMentions()
     
-    tc.read_stars('StarsTOR')
-    print "ranking yo"
+    tc.read_stars('StarsCS')
     tc.outputdata()

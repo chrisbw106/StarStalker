@@ -41,16 +41,37 @@ input:focus {
 #slist {
 	background-color: #2A2A2A;
 	height:50px;
-	width:250px;
-	margin-bottom:5px;
+	width:300px;
+	
+	font-family: Arial, Helvetica, sans-serif ;  
+}
+#slist:hover {
+	background-color: #1E1E1E;
+	height:50px;
+	width:300px;
+	
 	font-family: Arial, Helvetica, sans-serif ;  
 }
 #cpname {
 	color:#000;
 	font-weight:bold;
 }
-#cptext{
+#cptext {
 	color:#333;
+}
+#locatedstars {
+	color:##FF9900;
+	vertical-align:middle;
+	text-align:center;
+	height:25px;
+	line-height: 25px;
+	width:300px;
+	background-color:#1E1E1E;
+	font-family: Arial, Helvetica, sans-serif ;
+	font-weight:bold;  
+}
+#sspace{
+	height:5px;
 }
 	
 
